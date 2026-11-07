@@ -1,0 +1,5 @@
+Function	                What it returns
+load_dataset()	            A list containing all dataset records
+get_available_cities()	    A list of unique city names
+get_city_readings()	        All records for one selected city
+get_latest_city_reading()	The most recent record for that city
