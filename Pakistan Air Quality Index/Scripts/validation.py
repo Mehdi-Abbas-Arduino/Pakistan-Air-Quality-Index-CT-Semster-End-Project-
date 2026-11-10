@@ -1,94 +1,137 @@
-from data_loader import load_dataset
-from aqi_calculator import calculate_pm25_aqi, get_aqi_category
+import difflib
+import math
+from datetime import datetime
+
+
+# Every function here either returns a clean value,
+# or raises a ValueError with a message that is safe to show the user.
 
 
 # -----------------------------------------
-# CHECK 1: MISSING PM2.5 VALUES
+# VALIDATE A CITY NAME
 # -----------------------------------------
 
-def find_missing_pm25(records):
+def validate_city(text, cities):
 
-    missing = []
+    cleaned = text.strip()
 
-    for row in records:
-        if row["pm2_5"] is None:
-            missing.append(row)
+    if cleaned == "":
+        raise ValueError("Please enter a city name.")
 
-    return missing
+    # Match ignoring upper/lower case, and return the official spelling.
+    for city in cities:
+        if city.lower() == cleaned.lower():
+            return city
 
+    # Not found: try to suggest the closest city name.
+    lower_names = [city.lower() for city in cities]
+    close = difflib.get_close_matches(cleaned.lower(), lower_names, n=1)
 
-# -----------------------------------------
-# CHECK 2: PM2.5 VALUES OUTSIDE THE AQI TABLE
-# -----------------------------------------
+    if close:
+        suggestion = cities[lower_names.index(close[0])]
+        raise ValueError("City '" + cleaned + "' not found. Did you mean "
+                         + suggestion + "?")
 
-def find_out_of_range_pm25(records):
-
-    out_of_range = []
-
-    for row in records:
-        value = row["pm2_5"]
-
-        # The EPA table only covers 0 to 500.4.
-        if value is not None and (value < 0 or value > 500.4):
-            out_of_range.append(row)
-
-    return out_of_range
+    raise ValueError("City '" + cleaned + "' not found. Available cities: "
+                     + ", ".join(cities))
 
 
 # -----------------------------------------
-# CHECK 3: OUR CATEGORY vs THE DATASET'S CATEGORY
+# VALIDATE A DATE
 # -----------------------------------------
 
-def find_category_mismatches(records):
+def validate_date(text, first_date, last_date):
 
-    mismatches = []
+    cleaned = text.strip()
 
-    for row in records:
-        aqi = calculate_pm25_aqi(row["pm2_5"])
-        our_category = get_aqi_category(aqi)
+    if cleaned == "":
+        raise ValueError("Please enter a date (YYYY-MM-DD).")
 
-        # Compare our result with the dataset's own aqi_category column.
-        if our_category != row["aqi_category"]:
-            mismatches.append(row)
+    # Check that it is a real calendar date in the right format.
+    try:
+        parsed = datetime.strptime(cleaned, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Date must look like 2026-01-15 (YYYY-MM-DD).")
 
-    return mismatches
+    # Rebuild it so 2026-1-5 becomes 2026-01-05.
+    date_text = parsed.strftime("%Y-%m-%d")
+
+    # The dataset only covers a limited period.
+    if date_text < first_date or date_text > last_date:
+        raise ValueError("No data for that date. Choose a date between "
+                         + first_date + " and " + last_date + ".")
+
+    return date_text
 
 
 # -----------------------------------------
-# RUN ALL CHECKS
+# VALIDATE AN HOUR
 # -----------------------------------------
 
-def run_validation():
+def validate_hour(text):
 
-    records = load_dataset()
+    cleaned = text.strip()
 
-    print("Validating", len(records), "records...\n")
+    if cleaned == "":
+        raise ValueError("Please enter an hour (0 to 23).")
 
-    missing = find_missing_pm25(records)
-    out_of_range = find_out_of_range_pm25(records)
-    mismatches = find_category_mismatches(records)
+    # isdigit() rejects letters, decimals and negative numbers.
+    if not cleaned.isdigit():
+        raise ValueError("Hour must be a whole number from 0 to 23.")
 
-    print("Missing PM2.5 values:        ", len(missing))
-    print("PM2.5 outside AQI table:     ", len(out_of_range))
-    print("Category mismatches:         ", len(mismatches))
+    hour = int(cleaned)
 
-    # Show a few examples if anything went wrong.
-    for row in mismatches[:5]:
-        print("  Mismatch:", row["city"], row["timestamp"],
-              "PM2.5 =", row["pm2_5"],
-              "dataset says", row["aqi_category"])
+    if hour > 23:
+        raise ValueError("Hour must be between 0 and 23.")
 
-    # Validation passes only if every check found zero problems.
-    passed = len(missing) == 0 and len(out_of_range) == 0 and len(mismatches) == 0
-
-    if passed:
-        print("\nAll checks passed.")
-    else:
-        print("\nSome checks failed.")
-
-    return passed
+    return hour
 
 
-# Run the checks when this file is executed directly.
-if __name__ == "__main__":
-    run_validation()
+# -----------------------------------------
+# VALIDATE A PM2.5 VALUE
+# -----------------------------------------
+
+def validate_pm25(text):
+
+    cleaned = text.strip()
+
+    if cleaned == "":
+        raise ValueError("Please enter a PM2.5 value.")
+
+    try:
+        value = float(cleaned)
+    except ValueError:
+        raise ValueError("PM2.5 must be a number, for example 85.5.")
+
+    # float() also accepts 'nan' and 'inf', which are not real readings.
+    if not math.isfinite(value):
+        raise ValueError("PM2.5 must be a number, for example 85.5.")
+
+    # The AQI table only covers 0 to 500.4.
+    if value < 0 or value > 500.4:
+        raise ValueError("PM2.5 must be between 0 and 500.4 µg/m³.")
+
+    return value
+
+
+# -----------------------------------------
+# VALIDATE A QUIZ GUESS
+# -----------------------------------------
+
+def validate_guess(text):
+
+    cleaned = text.strip()
+
+    if cleaned == "":
+        raise ValueError("Please type your guess (a whole number from 0 to 500).")
+
+    # isdigit() rejects letters, decimals and negative numbers.
+    if not cleaned.isdigit():
+        raise ValueError("Your guess must be a whole number from 0 to 500.")
+
+    guess = int(cleaned)
+
+    if guess > 500:
+        raise ValueError("The AQI scale ends at 500, so guess 500 or less.")
+
+    return guess

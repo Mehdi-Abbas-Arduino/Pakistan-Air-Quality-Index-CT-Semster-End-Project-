@@ -1,3 +1,6 @@
+from recursion_tools import recursive_sum
+
+
 # -----------------------------------------
 # PM2.5 BREAKPOINTS (US EPA)
 # -----------------------------------------
@@ -92,7 +95,8 @@ def get_average_aqi(readings):
         return None
 
     # Average = total divided by count.
-    return round(sum(aqi_values) / len(aqi_values))
+    # The total is added up with recursion (see recursion_tools.py).
+    return round(recursive_sum(aqi_values) / len(aqi_values))
 
 
 # -----------------------------------------
@@ -118,3 +122,34 @@ def get_worst_reading(readings):
 
     # Return both the reading and its AQI.
     return worst_row, worst_aqi
+
+
+# -----------------------------------------
+# HEALTH ADVICE FOR EACH CATEGORY
+# -----------------------------------------
+
+HEALTH_ADVICE = {
+    "Good":
+        "Air quality is satisfactory. Enjoy your outdoor activities.",
+    "Moderate":
+        "Acceptable for most people. Unusually sensitive people should "
+        "consider reducing long outdoor exertion.",
+    "Unhealthy for Sensitive Groups":
+        "Children, older adults and people with heart or lung conditions "
+        "should limit long outdoor exertion.",
+    "Unhealthy":
+        "Everyone may start to feel health effects. Limit long outdoor "
+        "exertion; sensitive groups should stay indoors.",
+    "Very Unhealthy":
+        "Health alert. Avoid outdoor exertion, and wear a well-fitted "
+        "N95 mask if you must go outside.",
+    "Hazardous":
+        "Emergency conditions. Stay indoors with windows closed and "
+        "avoid all outdoor activity.",
+}
+
+
+def get_health_advice(category):
+
+    # Unknown or missing categories return an empty string.
+    return HEALTH_ADVICE.get(category, "")

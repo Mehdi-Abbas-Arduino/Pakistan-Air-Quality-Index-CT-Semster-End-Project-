@@ -1,5 +1,5 @@
-
 import csv
+import os
 
 
 # -----------------------------------------
@@ -27,10 +27,24 @@ NUMERIC_COLUMNS = [
 
 
 # -----------------------------------------
+# DATASET PATH
+# -----------------------------------------
+
+# Find the project folder from this file's own location,
+# so the program works no matter where it is run from.
+SCRIPTS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+PROJECT_FOLDER = os.path.dirname(SCRIPTS_FOLDER)
+
+DATASET_PATH = os.path.join(
+    PROJECT_FOLDER, "Dataset", "pakistan_air_quality_final_clean_v2.csv"
+)
+
+
+# -----------------------------------------
 # LOAD DATASET
 # -----------------------------------------
 
-def load_dataset(file_path="Dataset/pakistan_air_quality_final_clean_v2.csv"):
+def load_dataset(file_path=DATASET_PATH):
 
     # Create an empty list to store all dataset records.
     records = []
@@ -144,3 +158,38 @@ def get_latest_city_reading(records, selected_city):
 
     # Return the latest record.
     return latest_reading
+
+
+# -----------------------------------------
+# GET THE FIRST AND LAST DATE IN THE DATASET
+# -----------------------------------------
+
+def get_date_range(records):
+
+    # Collect every date string (format YYYY-MM-DD).
+    dates = []
+
+    for row in records:
+        dates.append(row["date"])
+
+    # Dates in this format sort correctly as plain text.
+    return min(dates), max(dates)
+
+
+# -----------------------------------------
+# GET ONE CITY'S READING AT A SPECIFIC DATE AND HOUR
+# -----------------------------------------
+
+def get_city_reading_at(records, selected_city, date_text, hour):
+
+    # Start with only the readings of the selected city.
+    city_readings = get_city_readings(records, selected_city)
+
+    for row in city_readings:
+
+        # The hour is stored as text in the dataset, so convert it.
+        if row["date"] == date_text and int(row["hour"]) == hour:
+            return row
+
+    # No reading exists for that date and hour.
+    return None
