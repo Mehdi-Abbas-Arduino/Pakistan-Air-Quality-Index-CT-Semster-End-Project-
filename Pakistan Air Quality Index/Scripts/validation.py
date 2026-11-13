@@ -2,6 +2,11 @@ import difflib
 import math
 from datetime import datetime
 
+'''• validate_city: Matches the name ignoring case and suggests the closest match with difflib if there is a typo.
+• validate_date: Checks the YYYY-MM-DD format, is a real date, and falls within the dataset range.
+• validate_hour: Accepts only whole numbers from 0 to 23.
+• validate_pm25: Accepts a number from 0 to 500.4 and rejects nan and inf, which float() would otherwise accept.
+• validate_guess: Accepts a whole number from 0 to 500 for the quiz.'''
 
 # Every function here either returns a clean value,
 # or raises a ValueError with a message that is safe to show the user.

@@ -5,6 +5,19 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 import matplotlib.cm as cm
 
+'''
+• make_card: Builds the result card (big AQI number, category, advice, details).
+• update_card: Fills the card and colors it by category.
+• check_time: The "Check Dataset" button. It validates the inputs, looks up the record, calculates the AQI and shows it.
+• check_live: The "Realtime API" button, which does the same using live data.
+• draw_map: Gets each city's AQI (live first, dataset as fallback) and draws the heatmap, circling the worst city.
+• do_calc: The manual PM2.5 calculator button.
+• update_status: Refreshes the quiz header (question number, score, tries left).
+• start_quiz: Resets the state and builds new questions.
+• show_question: Resets the per-question state and shows the new clues.
+• submit_guess: Validates the guess, checks it, awards points or narrows the range, and ends the question after 5 tries.
+• next_question: Moves on, or at the end shows the final rank and a "Play Again" button.'''
+
 from data_loader import (
     load_dataset,
     get_available_cities,

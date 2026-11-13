@@ -1,7 +1,9 @@
 # -----------------------------------------
 # PROGRAM ENTRY POINT
 # -----------------------------------------
-
+'''
+It has no functions. It imports gui and calls mainloop() on the window to start the program. It looks for app or window in gui.py so it works with either Tkinter or CustomTkinter.
+'''
 import gui
 
 if __name__ == "__main__":

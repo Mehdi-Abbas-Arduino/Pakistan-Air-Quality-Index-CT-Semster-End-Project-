@@ -3,6 +3,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 import matplotlib.cm as cm
 
+'''
+
+• embed_pakistan_aqi_map: Draws the dark-themed AQI map with colored dots, labels and a color bar. It is never imported anywhere. gui.py has its own draw_map with its own copy of the coordinates. Either delete this file or be ready to say it was the earlier version.
+'''
 # Latitude & Longitude coordinates for major Pakistani cities
 PAK_CITIES_COORDS = {
     "Karachi": (24.8607, 67.0011),

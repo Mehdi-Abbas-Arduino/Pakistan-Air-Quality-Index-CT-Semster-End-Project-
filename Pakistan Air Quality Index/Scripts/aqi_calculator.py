@@ -1,5 +1,12 @@
 from recursion_tools import recursive_sum
+'''
+• calculate_pm25_aqi: Converts a PM2.5 value to an AQI using the EPA breakpoint table and linear interpolation. It returns None for missing or out-of-range values.
+• get_aqi_category: Maps an AQI number to a label (Good, Moderate, ... Hazardous).
+• get_average_aqi: Computes the AQI of each reading, skips invalid ones, and averages them. It uses recursive_sum for the total.
+• get_worst_reading: Finds the reading with the highest AQI.
+• get_health_advice: Looks up the advice text for a category.
 
+'''
 
 # -----------------------------------------
 # PM2.5 BREAKPOINTS (US EPA)

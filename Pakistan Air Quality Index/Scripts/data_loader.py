@@ -1,6 +1,13 @@
 import csv
 import os
 
+'''
+• load_dataset: Opens the CSV, checks the required columns exist, strips city names, and converts numeric columns from text to floats (empty becomes None). CSV gives everything as strings, so without this no maths would work.
+• get_available_cities: Returns a sorted list of unique city names, used to fill the city dropdown.
+• get_city_readings: Filters all records down to one city, case-insensitively, so "lahore" and "Lahore" both work.
+• get_latest_city_reading: Finds a city's newest record by timestamp. It is the fallback for the map when the live API fails.
+• get_date_range: Returns the earliest and latest date in the dataset, used to validate the date the user types.
+• get_city_reading_at: Finds one city's reading at an exact date and hour. This powers the "Check Dataset" button.'''
 
 # -----------------------------------------
 # NUMERIC COLUMNS

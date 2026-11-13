@@ -2,6 +2,12 @@ import random
 
 from aqi_calculator import calculate_pm25_aqi
 
+'''• build_questions: Picks 5 random cities, each with a random reading and its correct AQI. The optional generator allows seeded tests.
+• describe_clues: Builds the clue text (weather, time, season) and hides the pollution values.
+• check_guess: Returns "correct" (within ±10), "higher" or "lower".
+• points_for_try: Gives 5 points for the first try, down to 1 for the fifth.
+• narrow_range: Updates the possible answer range after each guess, like a binary-search hint.
+• get_rank: Turns the final score into a rank title.'''
 
 # -----------------------------------------
 # QUIZ RULES

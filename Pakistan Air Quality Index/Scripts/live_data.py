@@ -2,6 +2,10 @@ import json
 import urllib.request
 import urllib.error
 
+'''
+• fetch_live_city_reading: Calls the Open-Meteo API for a city's current PM2.5, PM10 and dust, and returns a dict shaped like a dataset record so the rest of the code treats it the same way. It raises a clear error on a bad city or no internet.
+'''
+
 # Coordinates for major Pakistani cities
 CITY_COORDINATES = {
     "Karachi": (24.8607, 67.0011),
