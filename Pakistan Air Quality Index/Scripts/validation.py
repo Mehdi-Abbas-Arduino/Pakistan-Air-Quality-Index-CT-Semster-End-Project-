@@ -60,7 +60,7 @@ def validate_date(text, first_date, last_date):
         raise ValueError("Date must look like 2026-01-15 (YYYY-MM-DD).")
 
     # Normalize the format (e.g. 2026-1-5 → 2026-01-05)
-       date_text = parsed.strftime("%Y-%m-%d")
+    date_text = parsed.strftime("%Y-%m-%d")
 
     if date_text < first_date or date_text > last_date:
         raise ValueError(
