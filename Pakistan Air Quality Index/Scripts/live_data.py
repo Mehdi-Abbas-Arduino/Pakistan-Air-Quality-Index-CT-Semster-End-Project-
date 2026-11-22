@@ -1,12 +1,16 @@
+# ============================================================
+# LIVE DATA MODULE
+# ============================================================
+# Fetches real-time air quality data from the free Open-Meteo API.
+# Returns the data in the same dictionary format as the historical
+# dataset so the rest of the application can treat both the same way.
+# ============================================================
+
 import json
 import urllib.request
 import urllib.error
 
-'''
-• fetch_live_city_reading: Calls the Open-Meteo API for a city's current PM2.5, PM10 and dust, and returns a dict shaped like a dataset record so the rest of the code treats it the same way. It raises a clear error on a bad city or no internet.
-'''
-
-# Coordinates for major Pakistani cities
+# Coordinates of major Pakistani cities (used for the API request)
 CITY_COORDINATES = {
     "Karachi": (24.8607, 67.0011),
     "Lahore": (31.5204, 74.3587),
@@ -22,12 +26,16 @@ CITY_COORDINATES = {
     "Abbottabad": (34.1688, 73.2215)
 }
 
+
 def fetch_live_city_reading(city_name):
     """
-    Fetches real-time PM2.5, PM10, and dust data from Open-Meteo API.
-    Returns a dictionary structured like a dataset record.
+    Fetch current PM2.5, PM10 and dust values for a city
+    from the Open-Meteo Air Quality API.
+
+    Returns a dictionary that looks exactly like a dataset record.
+    Raises ValueError with a clear message if something goes wrong.
     """
-    # Match city name regardless of casing
+    # Find the city (case-insensitive)
     matched_city = None
     for name in CITY_COORDINATES:
         if name.lower() == city_name.strip().lower():
@@ -35,19 +43,26 @@ def fetch_live_city_reading(city_name):
             break
 
     if not matched_city:
-        raise ValueError(f"Live data is not available for '{city_name}'. Available live cities: " + ", ".join(sorted(CITY_COORDINATES.keys())))
+        available = ", ".join(sorted(CITY_COORDINATES.keys()))
+        raise ValueError(
+            f"Live data is not available for '{city_name}'. "
+            f"Available live cities: {available}"
+        )
 
     lat, lon = CITY_COORDINATES[matched_city]
-    url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=pm2_5,pm10,dust"
+    url = (
+        f"https://air-quality-api.open-meteo.com/v1/air-quality"
+        f"?latitude={lat}&longitude={lon}&current=pm2_5,pm10,dust"
+    )
 
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=5) as response:
             if response.status == 200:
-                data = json.loads(response.read().decode('utf-8'))
+                data = json.loads(response.read().decode("utf-8"))
                 current = data.get("current", {})
 
-                # Construct a dataset-compatible reading dictionary
+                # Build a dictionary that matches the historical dataset format
                 return {
                     "city": matched_city,
                     "timestamp": current.get("time", "Live Now").replace("T", " "),
@@ -60,7 +75,11 @@ def fetch_live_city_reading(city_name):
                     "humidity": None,
                     "is_live": True
                 }
-    except urllib.error.URLError as e:
-        raise ValueError("Could not connect to live air quality service. Please check your internet connection.")
+
+    except urllib.error.URLError:
+        raise ValueError(
+            "Could not connect to live air quality service. "
+            "Please check your internet connection."
+        )
     except Exception as e:
         raise ValueError(f"Error retrieving live data: {str(e)}")
