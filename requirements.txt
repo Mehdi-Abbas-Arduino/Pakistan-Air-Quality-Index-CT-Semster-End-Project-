@@ -1,0 +1,18 @@
+# Desktop interface
+customtkinter
+
+# Data processing and numerical operations
+pandas
+numpy
+
+# Charts
+matplotlib
+
+# Machine learning
+scikit-learn
+
+# HTTP requests
+requests
+
+# Testing
+pytest
