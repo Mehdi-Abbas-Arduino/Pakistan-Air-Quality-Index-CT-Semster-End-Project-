@@ -24,7 +24,7 @@ Build a Pakistan-focused desktop application that combines historical air-qualit
 - Cluster visualizations and plain-language cluster summaries.
 - Clear loading, stale-data, empty-data, and API-error states.
 
-### Excluded from version one
+### Separate experimental extension\n- Offline supervised AQI-estimation comparison using Linear Regression, degree-2 Polynomial Regression, and Random Forest Regression.\n- Chronological holdout evaluation with MAE, RMSE, and R².\n- Actual-versus-predicted and linear-versus-quadratic relationship plots.\n- The experiment remains separate from the production UI until its data quality and performance have been reviewed.\n\n### Excluded from version one
 - AQI forecasting.
 - Deep learning.
 - User accounts and authentication.
@@ -50,7 +50,7 @@ Use the revised 2024 US EPA PM2.5 concentration breakpoints:
 | 225.5–325.4 | 301–400 | Hazardous |
 | 325.5–500.4 | 401–500 | Hazardous |
 
-The AQI input must be an appropriately calculated 24-hour average. Follow the EPA concentration truncation/rounding and AQI interpolation rules when implementing the calculation. Do not apply the 24-hour method directly to a single instantaneous reading.
+Truncate PM2.5 concentration to one decimal place before interpolation. The AQI input must be an appropriately calculated 24-hour average. Do not apply the 24-hour method directly to a single instantaneous reading. For a daily historical aggregate, require at least 18 valid hourly PM2.5 values and clearly identify it as an estimate when coverage is incomplete.
 
 A future full AQI implementation would need valid sub-indices for additional pollutants and their pollutant-specific averaging periods. The overall AQI is the highest applicable sub-index, not the arithmetic mean of pollutant indices.
 
@@ -97,7 +97,7 @@ Missing values remain missing; they must not be silently changed to zero.
 
 Clusters are exploratory groupings. They are not health categories, official AQI labels, forecasts, or evidence of pollution sources. If the dataset is too small or too incomplete, collect more validated observations rather than inventing training data.
 
-## 6. Target interface
+## 6. Experimental supervised AQI-estimation plan\n\n- Build one row per city-day from the hourly historical data.\n- Calculate the target from the daily PM2.5 mean using the same 2024 AQI function as the main application.\n- Require at least 18 valid hourly PM2.5 values for a city-day target.\n- Use available daily means of PM10, CO, NO2, SO2, ozone, dust, temperature, humidity, precipitation, wind speed/direction, and pressure as candidate predictors.\n- Exclude PM2.5 from predictors because it directly determines the target AQI.\n- Impute missing predictor values inside each model pipeline using training-set medians; do not replace missing data with zero.\n\nCompare Linear Regression, degree-2 Polynomial Regression, and Random Forest Regression. Split chronologically by distinct dates, holding out the latest 20% of dates. Report MAE, RMSE, and R² on held-out dates. Save actual-versus-predicted and linear-versus-quadratic plots. This is AQI estimation, not future-time forecasting. The models approximate an existing PM2.5-based EPA calculation and do not define a new official AQI formula. The experiment initially runs separately from the desktop GUI.\n\n## 7. Target interface
 
 Use CustomTkinter for a five-section desktop application:
 
@@ -109,7 +109,7 @@ Use CustomTkinter for a five-section desktop application:
 
 Keep data acquisition, validation, AQI calculation, analysis, clustering, visualization, and UI code in separate modules. UI code should call these modules rather than contain the calculation logic itself.
 
-## 7. Target architecture
+## 8. Target architecture
 
 ```text
 Pakistan Air Quality Index/
@@ -141,7 +141,7 @@ Pakistan Air Quality Index/
 
 This is the target structure, not a claim that all modules already exist. Existing working modules should be migrated incrementally and tested.
 
-## 8. Implementation phases
+## 9. Implementation phases
 
 1. Audit the current repository, tests, and historical CSV.
 2. Standardize the data schema and validation.
@@ -152,7 +152,7 @@ This is the target structure, not a claim that all modules already exist. Existi
 7. Migrate the interface to CustomTkinter and build the five sections.
 8. Integrate, test, document, and prepare a demonstration.
 
-## 9. Definition of done
+## 10. Definition of done
 
 - Historical and live data have traceable source metadata.
 - Missing, duplicate, stale, and invalid records are handled explicitly.
