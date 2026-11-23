@@ -72,7 +72,7 @@ cd "Pakistan Air Quality Index/Scripts"
 python main.py
 ```
 
-Run the existing test suite from the `Tests` directory with the Scripts folder on the import path, or from the project root using your configured pytest path:
+Run the supervised regression experiment from the `Scripts` directory:\n\n```bash\npython -m ml.aqi_regression --show\n```\n\nRun the existing test suite from the project root:
 
 ```bash
 python -m pytest
