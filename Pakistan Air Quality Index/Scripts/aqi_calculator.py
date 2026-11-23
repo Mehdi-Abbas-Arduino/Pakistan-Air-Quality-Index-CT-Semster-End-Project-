@@ -1,73 +1,58 @@
 # ============================================================
 # AQI CALCULATOR MODULE
 # ============================================================
-# This module converts PM2.5 concentration values into the
-# official US EPA Air Quality Index (AQI) and provides related
-# helper functions (category, health advice, average, worst reading).
+# Converts valid 24-hour PM2.5 concentration averages into a
+# US EPA 2024 PM2.5 AQI estimate and provides related helpers.
 # ============================================================
 
 from recursion_tools import recursive_sum
 
-# ----------------------------------------------------------
-# US EPA PM2.5 BREAKPOINTS (official table)
-# ----------------------------------------------------------
-# Each row contains:
-#   (lowest PM2.5, highest PM2.5, lowest AQI, highest AQI)
-#
-# The AQI is calculated by finding which range the PM2.5 value
-# falls into, then performing linear interpolation inside that range.
-
+# 2024 US EPA PM2.5 breakpoints:
+# (lowest concentration, highest concentration, lowest AQI, highest AQI)
 PM25_BREAKPOINTS = [
-    (0.0,   12.0,    0,   50),     # Good
-    (12.1,  35.4,   51,  100),     # Moderate
-    (35.5,  55.4,  101,  150),     # Unhealthy for Sensitive Groups
-    (55.5,  150.4, 151,  200),     # Unhealthy
-    (150.5, 250.4, 201,  300),     # Very Unhealthy
-    (250.5, 350.4, 301,  400),     # Hazardous
-    (350.5, 500.4, 401,  500),     # Hazardous (higher)
+    (0.0, 9.0, 0, 50),
+    (9.1, 35.4, 51, 100),
+    (35.5, 55.4, 101, 150),
+    (55.5, 125.4, 151, 200),
+    (125.5, 225.4, 201, 300),
+    (225.5, 325.4, 301, 400),
+    (325.5, 500.4, 401, 500),
 ]
-# • C_low and C_high (First two numbers): The low and high concentration breakpoints in micrograms per cubic meter (µg/m³). Your sensor's PM2.5 reading is matched against these ranges.
-# • I_low and I_high (Last two numbers): The corresponding low and high AQI index values for that tier.
 
-# ----------------------------------------------------------
-# CALCULATE AQI FROM A SINGLE PM2.5 VALUE
-# ----------------------------------------------------------
+
 def calculate_pm25_aqi(pm25):
-    """
-    Convert a PM2.5 concentration (µg/m³) into a US EPA AQI value.
+    """Convert a 24-hour PM2.5 mean (µg/m³) to a 2024 US EPA AQI estimate.
 
-    Returns:
-        int  → AQI number (0-500)
-        None → if the value is missing or outside the valid range
+    The EPA concentration is truncated to one decimal place before
+    interpolation. This function does not turn an hourly reading into
+    a 24-hour average; callers must provide an appropriate average.
     """
-    # Cannot calculate AQI if the reading is missing
     if pm25 is None:
         return None
 
-    # EPA table uses one decimal place
-    pm25 = round(pm25, 1)
+    try:
+        pm25 = float(pm25)
+    except (TypeError, ValueError):
+        return None
 
-    # Find the correct breakpoint range and interpolate
+    if pm25 != pm25 or pm25 < 0 or pm25 > 500.4:
+        return None
+
+    # Truncate concentration to one decimal place, as required by the method.
+    pm25 = int((pm25 + 1e-10) * 10) / 10
+
     for c_low, c_high, i_low, i_high in PM25_BREAKPOINTS:
         if c_low <= pm25 <= c_high:
-            # Linear interpolation formula used by the EPA
             aqi = ((i_high - i_low) / (c_high - c_low)) * (pm25 - c_low) + i_low
             return round(aqi)
 
-    # Value is outside the official table (negative or > 500.4)
     return None
 
 
-# ----------------------------------------------------------
-# GET THE HUMAN-READABLE CATEGORY FOR AN AQI VALUE
-# ----------------------------------------------------------
 def get_aqi_category(aqi):
-    """
-    Convert a numeric AQI into its official category name.
-    """
+    """Convert a numeric AQI into its human-readable category."""
     if aqi is None:
         return None
-
     if aqi <= 50:
         return "Good"
     elif aqi <= 100:
@@ -78,81 +63,43 @@ def get_aqi_category(aqi):
         return "Unhealthy"
     elif aqi <= 300:
         return "Very Unhealthy"
-    else:
-        return "Hazardous"
+    return "Hazardous"
 
 
-# ----------------------------------------------------------
-# CALCULATE AVERAGE AQI FOR A LIST OF READINGS
-# ----------------------------------------------------------
 def get_average_aqi(readings):
-    """
-    Calculate the average AQI across many readings.
-    Uses recursive_sum (from recursion_tools) to demonstrate recursion.
-    """
+    """Calculate the average AQI across supplied PM2.5 averages."""
     aqi_values = []
-
     for row in readings:
         aqi = calculate_pm25_aqi(row["pm2_5"])
         if aqi is not None:
             aqi_values.append(aqi)
-
-    if len(aqi_values) == 0:
+    if not aqi_values:
         return None
-
-    # Average = total / count  (total is calculated recursively)
     return round(recursive_sum(aqi_values) / len(aqi_values))
 
 
-# ----------------------------------------------------------
-# FIND THE WORST (HIGHEST AQI) READING
-# ----------------------------------------------------------
 def get_worst_reading(readings):
-    """
-    Return the reading that has the highest AQI together with its AQI value.
-    """
+    """Return the reading with the highest calculated AQI and that AQI."""
     worst_row = None
     worst_aqi = None
-
     for row in readings:
         aqi = calculate_pm25_aqi(row["pm2_5"])
-
-        if aqi is None:
-            continue
-
-        if worst_aqi is None or aqi > worst_aqi:
+        if aqi is not None and (worst_aqi is None or aqi > worst_aqi):
             worst_row = row
             worst_aqi = aqi
-
     return worst_row, worst_aqi
 
 
-# ----------------------------------------------------------
-# HEALTH ADVICE FOR EACH AQI CATEGORY
-# ----------------------------------------------------------
 HEALTH_ADVICE = {
-    "Good":
-        "Air quality is satisfactory. Enjoy your outdoor activities.",
-    "Moderate":
-        "Acceptable for most people. Unusually sensitive people should "
-        "consider reducing long outdoor exertion.",
-    "Unhealthy for Sensitive Groups":
-        "Children, older adults and people with heart or lung conditions "
-        "should limit long outdoor exertion.",
-    "Unhealthy":
-        "Everyone may start to feel health effects. Limit long outdoor "
-        "exertion; sensitive groups should stay indoors.",
-    "Very Unhealthy":
-        "Health alert. Avoid outdoor exertion, and wear a well-fitted "
-        "N95 mask if you must go outside.",
-    "Hazardous":
-        "Emergency conditions. Stay indoors with windows closed and "
-        "avoid all outdoor activity.",
+    "Good": "Air quality is satisfactory. Enjoy your outdoor activities.",
+    "Moderate": "Acceptable for most people. Unusually sensitive people should consider reducing long outdoor exertion.",
+    "Unhealthy for Sensitive Groups": "Children, older adults and people with heart or lung conditions should limit long outdoor exertion.",
+    "Unhealthy": "Everyone may start to feel health effects. Limit long outdoor exertion; sensitive groups should stay indoors.",
+    "Very Unhealthy": "Health alert. Avoid outdoor exertion, and wear a well-fitted N95 mask if you must go outside.",
+    "Hazardous": "Emergency conditions. Stay indoors with windows closed and avoid all outdoor activity.",
 }
 
 
 def get_health_advice(category):
-    """
-    Return the recommended health advice for a given AQI category.
-    """
+    """Return the advice associated with an AQI category."""
     return HEALTH_ADVICE.get(category, "")
