@@ -26,7 +26,8 @@ PM25_BREAKPOINTS = [
     (250.5, 350.4, 301,  400),     # Hazardous
     (350.5, 500.4, 401,  500),     # Hazardous (higher)
 ]
-
+# • C_low and C_high (First two numbers): The low and high concentration breakpoints in micrograms per cubic meter (µg/m³). Your sensor's PM2.5 reading is matched against these ranges.
+# • I_low and I_high (Last two numbers): The corresponding low and high AQI index values for that tier.
 
 # ----------------------------------------------------------
 # CALCULATE AQI FROM A SINGLE PM2.5 VALUE
