@@ -53,6 +53,14 @@ def test_daily_target_requires_18_valid_hourly_pm25_values():
     assert "pm2_5" not in daily.columns
 
 
+def test_duplicate_timestamps_do_not_count_as_extra_valid_hours():
+    data = make_hourly_data(days=1)
+    duplicated = pd.concat([data, data.iloc[[0]]], ignore_index=True)
+    daily, _ = prepare_daily_training_data(duplicated)
+    assert len(daily) == 1
+    assert daily.iloc[0]["date"] == pd.Timestamp("2026-01-01").date()
+
+
 def test_feature_selection_excludes_pm25():
     daily, features = prepare_daily_training_data(make_hourly_data())
     assert "pm2_5" not in features
