@@ -69,8 +69,13 @@ def prepare_daily_training_data(
     frame["city"] = frame["city"].astype("string").str.strip()
     frame["timestamp"] = pd.to_datetime(frame["timestamp"], errors="coerce")
     frame["pm2_5"] = pd.to_numeric(frame["pm2_5"], errors="coerce")
+    frame["pm2_5"] = frame["pm2_5"].where(np.isfinite(frame["pm2_5"]))
     frame = frame.dropna(subset=["city", "timestamp"])
     frame = frame[frame["city"] != ""]
+    # Duplicate city/timestamp rows must not inflate daily valid-hour counts.
+    frame = frame.sort_values("timestamp").drop_duplicates(
+        subset=["city", "timestamp"], keep="last"
+    )
 
     feature_columns = [
         column for column in CANDIDATE_FEATURES
@@ -81,6 +86,7 @@ def prepare_daily_training_data(
 
     for column in feature_columns:
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
+        frame[column] = frame[column].where(np.isfinite(frame[column]))
 
     frame["date"] = frame["timestamp"].dt.date
     grouped = frame.groupby(["city", "date"], sort=True)
