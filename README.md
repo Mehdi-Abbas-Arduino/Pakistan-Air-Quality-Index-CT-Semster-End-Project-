@@ -2,7 +2,7 @@
 
 A Python desktop application for exploring air-quality information across selected Pakistani cities. The project combines a historical CSV dataset with modelled air-quality data from Open-Meteo, calculates clearly labelled PM2.5-based US EPA AQI estimates, visualizes historical patterns, and uses machine learning experiments to explore AQI estimation and annual city trends.
 
-> **Project status:** Scope and architecture are being finalized. The current application is an early Tkinter implementation. The CustomTkinter interface, validated 24-hour AQI pipeline, historical analysis screens, and K-Means insights are planned development work, not features that should be assumed complete.
+> **Project status:** The project has been completed. The application includes its implemented interface, AQI calculation pipeline, historical data analysis, and K-Means clustering insights. No further features or enhancements are planned.
 
 ## Agreed project decisions
 
