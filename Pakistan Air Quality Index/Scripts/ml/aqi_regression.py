@@ -47,6 +47,7 @@ CANDIDATE_FEATURES = (
 )
 
 
+# Cleans hourly rows, creates city-day AQI targets, aggregates available predictor columns, and returns the daily training table plus selected feature names.
 def prepare_daily_training_data(
     data: pd.DataFrame,
     min_valid_hours: int = 18,
@@ -111,6 +112,7 @@ def prepare_daily_training_data(
     return daily.reset_index(drop=True), feature_columns
 
 
+# Splits rows by date so earlier observations are training data and later observations are held out for evaluation.
 def chronological_split(
     daily: pd.DataFrame,
     test_fraction: float = 0.2,
@@ -136,6 +138,7 @@ def chronological_split(
     return train, test
 
 
+# Creates the preprocessing and regression pipelines being compared.
 def build_models() -> dict[str, Pipeline]:
     """Return the three agreed regression pipelines."""
     return {
@@ -162,6 +165,7 @@ def build_models() -> dict[str, Pipeline]:
     }
 
 
+# Fits each model on training dates, predicts held-out dates, and calculates MAE, RMSE, and R-squared.
 def train_and_evaluate(
     daily: pd.DataFrame,
     feature_columns: list[str],
@@ -198,6 +202,7 @@ def train_and_evaluate(
     }
 
 
+# Plots held-out actual AQI values against the predictions from each regression model.
 def plot_actual_vs_predicted(
     results: dict[str, Any],
     output_path: str | Path | None = None,
@@ -225,6 +230,7 @@ def plot_actual_vs_predicted(
     return fig
 
 
+# Plots one selected feature against AQI with descriptive linear and quadratic fitted curves.
 def plot_linear_and_nonlinear_relationship(
     daily: pd.DataFrame,
     feature: str | None = None,
@@ -264,6 +270,7 @@ def plot_linear_and_nonlinear_relationship(
     return fig
 
 
+# Runs data preparation, training, evaluation, CSV export, and graph generation as one workflow.
 def run_experiment(
     csv_path: str | Path = DEFAULT_DATASET_PATH,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
@@ -304,6 +311,7 @@ def run_experiment(
     }
 
 
+# Parses command-line options and starts the regression experiment.
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train and compare AQI regression models.")
     parser.add_argument(
