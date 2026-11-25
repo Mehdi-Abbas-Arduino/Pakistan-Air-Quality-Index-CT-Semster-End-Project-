@@ -1,3 +1,5 @@
+"""Centralizes input validation. Functions return cleaned values when inputs are valid and raise ValueError with a user-readable message otherwise."""
+
 # ============================================================
 # VALIDATION MODULE
 # ============================================================
@@ -14,6 +16,7 @@ from datetime import datetime
 # ----------------------------------------------------------
 # VALIDATE CITY NAME
 # ----------------------------------------------------------
+# Checks whether a city exists in the dataset and suggests a close spelling when possible.
 def validate_city(text, cities):
     """
     Check that the typed city exists in the dataset.
@@ -44,6 +47,7 @@ def validate_city(text, cities):
 # ----------------------------------------------------------
 # VALIDATE DATE
 # ----------------------------------------------------------
+# Parses a date in YYYY-MM-DD form and checks that it falls within the dataset's available date range.
 def validate_date(text, first_date, last_date):
     """
     Check that the date is in YYYY-MM-DD format and falls
@@ -73,6 +77,7 @@ def validate_date(text, first_date, last_date):
 # ----------------------------------------------------------
 # VALIDATE HOUR
 # ----------------------------------------------------------
+# Accepts only an integer hour from 0 through 23.
 def validate_hour(text):
     """
     Accept only whole numbers from 0 to 23.
@@ -96,6 +101,7 @@ def validate_hour(text):
 # ----------------------------------------------------------
 # VALIDATE PM2.5 VALUE
 # ----------------------------------------------------------
+# Converts a PM2.5 input to a finite number and checks the accepted concentration range.
 def validate_pm25(text):
     """
     Accept a number between 0 and 500.4 (the range of the EPA table).
@@ -123,6 +129,7 @@ def validate_pm25(text):
 # ----------------------------------------------------------
 # VALIDATE QUIZ GUESS
 # ----------------------------------------------------------
+# Accepts only a whole-number AQI guess from 0 through 500.
 def validate_guess(text):
     """
     Accept a whole number between 0 and 500 for the quiz game.
