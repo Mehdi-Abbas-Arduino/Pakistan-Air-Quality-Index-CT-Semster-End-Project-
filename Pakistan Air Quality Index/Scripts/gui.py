@@ -1,3 +1,5 @@
+"""Builds the Tkinter desktop interface, connects buttons to project functions, displays AQI results, draws the city map, and manages the AQI quiz."""
+
 import tkinter as tk
 from tkinter import ttk
 import matplotlib.pyplot as plt
@@ -138,6 +140,7 @@ tabs.add(calc_tab, text=" 🧮 AQI Calculator ")
 tabs.add(quiz_tab, text=" 🎮 Arcade Quiz Game ")
 
 # Helper Result Card
+# Creates and returns the reusable result-card widgets used to display an AQI number, category, advice, and details.
 def make_card(parent):
     frame = tk.Frame(parent, bg=CARD_BG, highlightbackground="#334155", highlightthickness=1)
     banner = tk.Frame(frame, bg="#334155")
@@ -157,6 +160,7 @@ def make_card(parent):
 
     return {"frame": frame, "banner": banner, "aqi": aqi_lbl, "category": cat_lbl, "advice": advice_lbl, "details": details_lbl}
 
+# Updates an existing result card with the AQI, category colour, health advice, and supporting details.
 def update_card(card, aqi, details):
     cat = get_aqi_category(aqi)
     bg, fg = CATEGORY_COLORS[cat]
@@ -194,6 +198,7 @@ city_err.pack(anchor="w", padx=14)
 
 city_card = make_card(city_tab)
 
+# Validates the selected city, date, and hour, finds the historical CSV record, calculates its PM2.5-based AQI, and updates the result card.
 def check_time():
     city_err.config(text="")
     try:
@@ -209,6 +214,7 @@ def check_time():
     except ValueError as e:
         city_err.config(text=f"⚠ {str(e)}")
 
+# Requests the selected city's latest Open-Meteo reading, calculates its PM2.5-based AQI, and displays the result.
 def check_live():
     city_err.config(text="")
     try:
@@ -233,6 +239,7 @@ city_card["frame"].pack(fill="x", padx=10, pady=10)
 map_frame = tk.Frame(map_tab, bg=CARD_BG)
 map_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
+# Collects city AQI values, prefers live data with historical fallback, and draws the city-level map visualization.
 def draw_map():
     for w in map_frame.winfo_children():
         w.destroy()
@@ -303,6 +310,7 @@ calc_err.pack(anchor="w", padx=14)
 
 calc_card = make_card(calc_tab)
 
+# Reads the manual PM2.5 input, validates it, calculates AQI, and displays the result in the calculator tab.
 def do_calc():
     calc_err.config(text="")
     try:
@@ -344,18 +352,21 @@ feedback_label.pack(pady=4)
 history_label = tk.Label(quiz_tab, text="", font=(FONT, 10), bg=DARK_BG, fg=MUTED_TEXT)
 history_label.pack()
 
+# Refreshes the quiz status labels such as question number, score, and remaining attempts.
 def update_status():
     left = TRIES_PER_QUESTION - quiz_state["tries_used"]
     dots = "●" * left + "○" * quiz_state["tries_used"]
     score = total_score(quiz_state["scores"])
     quiz_status.config(text=f"Question {quiz_state['number'] + 1} of {len(quiz_state['questions'])}   |   Score: {score}   |   Tries: {dots}")
 
+# Resets quiz state, creates a new set of questions, and displays the first question.
 def start_quiz():
     quiz_state["questions"] = build_questions(records)
     quiz_state["number"] = 0
     quiz_state["scores"] = []
     show_question()
 
+# Resets the current question's attempt state and renders its clues and controls.
 def show_question():
     q = quiz_state["questions"][quiz_state["number"]]
     quiz_state["tries_used"] = 0
@@ -376,6 +387,7 @@ def show_question():
     action_button.config(text="Next Question", state="disabled")
     update_status()
 
+# Validates a submitted quiz guess, checks it against the answer, updates score or hints, and handles the attempt limit.
 def submit_guess(event=None):
     if not quiz_state["active"]:
         return
@@ -419,6 +431,7 @@ def submit_guess(event=None):
     
     update_status()
 
+# Advances to the next quiz question or displays the final score and rank.
 def next_question():
     if quiz_state["number"] + 1 < len(quiz_state["questions"]):
         quiz_state["number"] += 1
