@@ -1,3 +1,5 @@
+"""AQI calculation helpers. Converts a suitable 24-hour PM2.5 concentration average into a PM2.5-based US EPA AQI estimate, assigns a category, and provides summaries and health-advice text."""
+
 # ============================================================
 # AQI CALCULATOR MODULE
 # ============================================================
@@ -20,6 +22,7 @@ PM25_BREAKPOINTS = [
 ]
 
 
+# Converts one 24-hour PM2.5 mean into an AQI value using the breakpoint table. It validates, truncates, finds the matching interval, interpolates, and rounds.
 def calculate_pm25_aqi(pm25):
     """Convert a 24-hour PM2.5 mean (µg/m³) to a 2024 US EPA AQI estimate.
 
@@ -49,6 +52,7 @@ def calculate_pm25_aqi(pm25):
     return None
 
 
+# Maps a numeric AQI value to one of the six category labels.
 def get_aqi_category(aqi):
     """Convert a numeric AQI into its human-readable category."""
     if aqi is None:
@@ -66,6 +70,7 @@ def get_aqi_category(aqi):
     return "Hazardous"
 
 
+# Calculates AQI values for supplied readings and returns their arithmetic mean, or None if none are valid.
 def get_average_aqi(readings):
     """Calculate the average AQI across supplied PM2.5 averages."""
     aqi_values = []
@@ -78,6 +83,7 @@ def get_average_aqi(readings):
     return round(recursive_sum(aqi_values) / len(aqi_values))
 
 
+# Finds the supplied reading with the highest valid PM2.5-based AQI.
 def get_worst_reading(readings):
     """Return the reading with the highest calculated AQI and that AQI."""
     worst_row = None
@@ -100,6 +106,7 @@ HEALTH_ADVICE = {
 }
 
 
+# Looks up the guidance text associated with a category.
 def get_health_advice(category):
     """Return the advice associated with an AQI category."""
     return HEALTH_ADVICE.get(category, "")
