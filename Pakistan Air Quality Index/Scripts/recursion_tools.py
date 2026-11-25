@@ -1,3 +1,5 @@
+"""Holds recursive helper functions used by the application for summing quiz scores and AQI values."""
+
 # ============================================================
 # RECURSION TOOLS MODULE
 # ============================================================
@@ -16,6 +18,7 @@
 # Used in the quiz to calculate the player's current score.
 # The list is always very small (max 5 items), so recursion depth is safe.
 
+# Uses simple recursion to add a list of scores. The empty list is the base case.
 def total_score(scores):
     """
     Recursively calculate the sum of a list of numbers.
@@ -39,6 +42,7 @@ def total_score(scores):
 #
 # Used inside get_average_aqi() in aqi_calculator.py.
 
+# Uses divide-and-conquer recursion to sum a selected list range while keeping recursion depth lower for large lists.
 def recursive_sum(numbers, start=0, end=None):
     """
     Efficiently calculate the sum of a list using divide-and-conquer recursion.
