@@ -1,3 +1,5 @@
+"""Contains a reusable Matplotlib map-drawing helper for displaying city AQI values inside a Tkinter frame. The current GUI also contains its own map drawing implementation."""
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import LinearSegmentedColormap, Normalize
@@ -27,6 +29,7 @@ PAK_CITIES_COORDS = {
 AQI_COLORS = ["#00E400", "#FFFF00", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]
 AQI_BOUNDS = [0, 50, 100, 150, 200, 300, 500]
 
+# Creates a map-style plot, places AQI markers at known city coordinates, colours markers by AQI band, adds labels and a colour scale, and embeds the figure in the supplied Tkinter frame.
 def embed_pakistan_aqi_map(parent_frame, city_aqi_dict):
     """
     Renders a glossy dark-mode map of Pakistan displaying AQI values across cities,
