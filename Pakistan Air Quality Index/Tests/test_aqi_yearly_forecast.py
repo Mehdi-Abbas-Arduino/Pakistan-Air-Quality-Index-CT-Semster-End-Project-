@@ -27,7 +27,7 @@ def test_prepare_annual_aqi_uses_daily_aqi_and_yearly_average():
 
 def test_prepare_annual_aqi_rejects_days_below_hour_threshold():
     data = make_hourly_data()
-    data = data[data["timestamp"].str.startswith("2021")]
+    data = data[data["timestamp"].str.startswith("2021")].head(17)
 
     annual = prepare_annual_aqi(data)
     assert annual.empty
