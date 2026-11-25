@@ -1,3 +1,5 @@
+"""Requests current hourly air-quality data from the Open-Meteo API for a city and normalizes the response into the dictionary shape used by the application."""
+
 # ============================================================
 # LIVE DATA MODULE
 # ============================================================
@@ -27,6 +29,7 @@ CITY_COORDINATES = {
 }
 
 
+# Looks up city coordinates, sends the API request, checks the response, and returns a normalized city reading. Raises a clear error when data cannot be retrieved or interpreted.
 def fetch_live_city_reading(city_name):
     """
     Fetch current PM2.5, PM10 and dust values for a city
