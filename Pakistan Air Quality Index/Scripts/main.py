@@ -1,3 +1,5 @@
+"""Application entry point. Imports the GUI module so its Tkinter window and event loop can start when the project is launched."""
+
 # ============================================================
 # MAIN ENTRY POINT
 # Pakistan Air Quality Index (AQI) Dashboard
