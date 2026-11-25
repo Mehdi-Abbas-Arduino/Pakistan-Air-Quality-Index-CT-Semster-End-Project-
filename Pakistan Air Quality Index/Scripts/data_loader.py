@@ -1,3 +1,5 @@
+"""Loads the historical CSV file, converts fields into usable Python values, and provides query helpers used by the dashboard."""
+
 # ============================================================
 # DATA LOADER MODULE
 # ============================================================
@@ -47,6 +49,7 @@ DATASET_PATH = os.path.join(
 # ----------------------------------------------------------
 # LOAD THE ENTIRE DATASET
 # ----------------------------------------------------------
+# Reads the CSV, checks required columns, cleans city names, converts known numeric fields, and returns a list of row dictionaries.
 def load_dataset(file_path=DATASET_PATH):
     """
     Open the CSV file, validate required columns, convert numeric
@@ -84,6 +87,7 @@ def load_dataset(file_path=DATASET_PATH):
 # ----------------------------------------------------------
 # GET LIST OF ALL AVAILABLE CITIES
 # ----------------------------------------------------------
+# Builds a sorted list containing each city name once.
 def get_available_cities(records):
     """
     Return a sorted list of unique city names present in the dataset.
@@ -103,6 +107,7 @@ def get_available_cities(records):
 # ----------------------------------------------------------
 # GET ALL READINGS FOR ONE CITY
 # ----------------------------------------------------------
+# Filters all records to the selected city, ignoring capitalization differences.
 def get_city_readings(records, selected_city):
     """
     Return every record that belongs to the selected city
@@ -120,6 +125,7 @@ def get_city_readings(records, selected_city):
 # ----------------------------------------------------------
 # GET THE MOST RECENT READING FOR A CITY
 # ----------------------------------------------------------
+# Returns the most recent available record for a city, or None if the city has no rows.
 def get_latest_city_reading(records, selected_city):
     """
     Return the newest record for the given city (based on timestamp).
@@ -138,6 +144,7 @@ def get_latest_city_reading(records, selected_city):
 # ----------------------------------------------------------
 # GET THE DATE RANGE COVERED BY THE DATASET
 # ----------------------------------------------------------
+# Returns the earliest and latest dates represented in the loaded records.
 def get_date_range(records):
     """
     Return the earliest and latest date present in the dataset.
@@ -150,6 +157,7 @@ def get_date_range(records):
 # ----------------------------------------------------------
 # GET ONE SPECIFIC READING (CITY + DATE + HOUR)
 # ----------------------------------------------------------
+# Finds a record matching a city, date, and hour; returns None when no match exists.
 def get_city_reading_at(records, selected_city, date_text, hour):
     """
     Find the exact reading for a city on a given date and hour.
