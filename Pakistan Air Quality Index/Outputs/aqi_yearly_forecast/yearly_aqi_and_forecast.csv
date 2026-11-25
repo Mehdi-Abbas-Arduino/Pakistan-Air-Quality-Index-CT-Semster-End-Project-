@@ -1,0 +1,21 @@
+city,year,average_aqi,valid_days,record_type
+Faisalabad,2025,223.39,56,historical
+Faisalabad,2026,249.06,35,historical
+Islamabad,2025,142.8,56,historical
+Islamabad,2026,140.17,35,historical
+Karachi,2025,109.43,56,historical
+Karachi,2026,104.77,35,historical
+Lahore,2025,193.84,56,historical
+Lahore,2026,226.8,35,historical
+Multan,2025,213.55,56,historical
+Multan,2026,217.54,35,historical
+Peshawar,2025,134.84,56,historical
+Peshawar,2026,142.46,35,historical
+Quetta,2025,66.3,56,historical
+Quetta,2026,74.63,35,historical
+Rahim Yar Khan,2025,158.61,56,historical
+Rahim Yar Khan,2026,157.91,35,historical
+Rawalpindi,2025,142.8,56,historical
+Rawalpindi,2026,140.17,35,historical
+Sialkot,2025,184.41,56,historical
+Sialkot,2026,215.94,35,historical
