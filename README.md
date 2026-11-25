@@ -72,7 +72,15 @@ cd "Pakistan Air Quality Index/Scripts"
 python main.py
 ```
 
-Run the supervised regression experiment from the `Scripts` directory:\n\n```bash\npython -m ml.aqi_regression --show\n```\n\nRun the existing test suite from the project root:
+Run the supervised regression experiment from the `Scripts` directory:\n\n```bash\npython -m ml.aqi_regression --show\n```\n\nRun the city-wise annual AQI trend and five-year projection from the `Scripts` directory:
+
+```bash
+python -m ml.aqi_yearly_forecast --show
+```
+
+Change the projection horizon with `--years 3`, `--years 5`, or another positive number. The output graph and CSV files are saved under `Outputs/aqi_yearly_forecast`. See [docs/AQI_YEARLY_CITY_FORECAST.md](docs/AQI_YEARLY_CITY_FORECAST.md) for the methodology and limitations.
+
+Run the existing test suite from the project root:
 
 ```bash
 python -m pytest
