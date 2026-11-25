@@ -1,3 +1,5 @@
+"""Contains the AQI guessing game's question generation, clue formatting, answer checking, scoring, hint-range logic, and final ranking rules."""
+
 import random
 
 from aqi_calculator import calculate_pm25_aqi
@@ -23,6 +25,7 @@ MAX_AQI = 500
 # BUILD RANDOM QUESTIONS
 # -----------------------------------------
 
+# Selects quiz readings and calculates their answer AQI values. An optional random generator makes tests reproducible.
 def build_questions(records, count=QUESTION_COUNT, generator=None):
 
     # Use Python's random module unless a seeded generator is given (for tests).
@@ -63,6 +66,7 @@ def build_questions(records, count=QUESTION_COUNT, generator=None):
 # THE CLUES SHOWN TO THE PLAYER
 # -----------------------------------------
 
+# Builds human-readable clues from a reading while keeping the target AQI hidden.
 def describe_clues(reading):
 
     # Only weather and time clues. The pollution values stay hidden.
@@ -83,6 +87,7 @@ def describe_clues(reading):
 # CHECK A GUESS
 # -----------------------------------------
 
+# Classifies a guess as correct, too high, or too low using the configured tolerance.
 def check_guess(guess, answer, tolerance=TOLERANCE):
 
     # Close enough counts as correct.
@@ -100,6 +105,7 @@ def check_guess(guess, answer, tolerance=TOLERANCE):
 # POINTS: FEWER TRIES = MORE POINTS
 # -----------------------------------------
 
+# Returns the points awarded for the attempt number.
 def points_for_try(try_number):
 
     if 1 <= try_number <= TRIES_PER_QUESTION:
@@ -112,6 +118,7 @@ def points_for_try(try_number):
 # NARROW DOWN THE POSSIBLE RANGE
 # -----------------------------------------
 
+# Updates the remaining possible AQI interval after a guess to provide a more focused hint.
 def narrow_range(low, high, guess, result, tolerance=TOLERANCE):
 
     # "higher" means the answer is more than guess + tolerance.
@@ -129,6 +136,7 @@ def narrow_range(low, high, guess, result, tolerance=TOLERANCE):
 # RANK FROM THE FINAL SCORE
 # -----------------------------------------
 
+# Maps a final score to a rank label.
 def get_rank(total, maximum):
 
     share = total / maximum
