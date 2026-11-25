@@ -1,0 +1,349 @@
+PAKISTAN AIR QUALITY INDEX
+DATA, AQI, PM2.5 AND BREAKPOINTS EXPLAINED
+============================================================
+
+Purpose of this document
+------------------------
+This document explains the air-quality concepts and data-processing choices
+used by the Pakistan Air Quality Index project. It is intended for students
+reading the dataset, the AQI calculator, and the machine-learning scripts.
+
+IMPORTANT METHODOLOGY NOTICE
+----------------------------
+The current project code labels its PM2.5 breakpoint table as the "2024 US EPA"
+method. However, the last two rows currently coded in
+Scripts/aqi_calculator.py split the Hazardous range into AQI 301-400 and
+401-500. The 2024 EPA rulemaking removed the separate 400 breakpoint and
+shows PM2.5 concentrations of 225.5 µg/m3 and above as Hazardous, AQI 301+.
+
+Therefore, the current calculator's final two rows do not match the published
+2024 table. Do not describe the current implementation as a fully verified
+2024 EPA implementation until the code and its tests are corrected together.
+This discrepancy is deliberately documented here so it is not hidden by the
+documentation.
+
+1. WHAT IS AIR POLLUTION?
+-------------------------
+Air pollution occurs when gases, particles, or other substances are present
+in the air at levels that can affect people or the environment.
+
+The project records several pollutant variables, including:
+- PM2.5: fine particles with aerodynamic diameter up to 2.5 micrometres.
+- PM10: particles with aerodynamic diameter up to 10 micrometres.
+- Carbon monoxide (CO).
+- Nitrogen dioxide (NO2).
+- Sulphur dioxide (SO2).
+- Ozone (O3).
+- Dust and other atmospheric variables.
+
+PM2.5 is especially important because fine particles can travel deeply into
+the respiratory system. The World Health Organization describes particulate
+matter as a mixture that can include dust, soot, smoke, and liquid droplets.
+See reference [3].
+
+2. WHAT IS AQI?
+---------------
+AQI means Air Quality Index. It is a communication scale that turns pollutant
+concentrations into an easier-to-understand index and health category.
+
+The US EPA AQI uses a scale commonly displayed from 0 to 500:
+- A lower value indicates cleaner air under that index.
+- A higher value indicates greater pollution and a greater level of health
+  concern.
+- The categories communicate different levels of health concern.
+
+The six familiar US AQI categories are:
+- 0-50: Good
+- 51-100: Moderate
+- 101-150: Unhealthy for Sensitive Groups
+- 151-200: Unhealthy
+- 201-300: Very Unhealthy
+- 301 and above: Hazardous
+
+Reference [1] explains the AQI and its categories. The regulatory reporting
+requirements and pollutant-specific tables are in reference [2].
+
+IMPORTANT: AQI IS NOT A CONCENTRATION
+-------------------------------------
+PM2.5 concentration is a physical measurement or model estimate, usually
+expressed in micrograms per cubic metre (µg/m3).
+
+AQI is a dimensionless index calculated from a pollutant concentration using
+a selected AQI standard and its breakpoint table.
+
+For example:
+- PM2.5 = 20 µg/m3 is a concentration.
+- The AQI calculated from that concentration is an index value.
+
+The number 20 by itself is not enough to identify which quantity is being
+reported. Always show the unit for concentration and label AQI as an index.
+
+3. WHAT IS PM2.5?
+-----------------
+PM stands for particulate matter. The number describes the approximate
+aerodynamic diameter size class in micrometres (µm).
+
+PM2.5 refers to fine particles with aerodynamic diameter of 2.5 µm or less.
+PM10 refers to particles with aerodynamic diameter of 10 µm or less.
+PM2.5 is a subset of PM10, not a completely separate non-overlapping group.
+
+Examples of sources of particulate matter include combustion, traffic,
+industry, dust, and some natural processes. The exact source cannot be
+identified from a PM2.5 number alone. See WHO reference [3].
+
+The project stores PM2.5 concentration in µg/m3. The variable name used in
+the CSV and Python code is normally pm2_5.
+
+4. WHAT ARE AQI BREAKPOINTS?
+----------------------------
+A breakpoint is a boundary in the pollutant concentration scale that
+corresponds to a boundary in the AQI scale.
+
+The breakpoint table answers two questions:
+1. Which AQI interval contains this pollutant concentration?
+2. Between which two AQI values should the concentration be interpolated?
+
+For PM2.5, the US EPA table uses 24-hour concentration ranges. Each
+concentration interval is paired with an AQI interval.
+
+Published 2024 US EPA PM2.5 table:
++--------------------------------------+------------------+------------------------------+
+| PM2.5 concentration (µg/m3), 24-hour | AQI interval     | Category                     |
++--------------------------------------+------------------+------------------------------+
+| 0.0 - 9.0                            | 0 - 50           | Good                         |
+| 9.1 - 35.4                           | 51 - 100         | Moderate                     |
+| 35.5 - 55.4                          | 101 - 150        | Unhealthy for Sensitive Groups|
+| 55.5 - 125.4                         | 151 - 200        | Unhealthy                    |
+| 125.5 - 225.4                        | 201 - 300        | Very Unhealthy                |
+| 225.5 and above                      | 301 and above    | Hazardous                    |
++--------------------------------------+------------------+------------------------------+
+
+These are pollutant concentration breakpoints, not universal thresholds
+for every AQI system. Other countries and organizations may use different
+pollutants, averaging periods, breakpoint values, and category names.
+
+The table above is from the US EPA's 2024 PM2.5 rulemaking and the AQI
+breakpoint table in 40 CFR Part 58, Appendix G. See references [2] and [4].
+
+5. HOW DOES BREAKPOINT INTERPOLATION WORK?
+------------------------------------------
+The measured or modelled concentration usually falls somewhere between
+two concentration breakpoints. The AQI is calculated by linearly mapping
+that concentration into the matching AQI interval.
+
+Formula:
+
+             (I_high - I_low)
+AQI = --------------------------------- * (C - C_low) + I_low
+             (C_high - C_low)
+
+Where:
+- C       = pollutant concentration after the required truncation.
+- C_low   = lower concentration breakpoint for the interval.
+- C_high  = upper concentration breakpoint for the interval.
+- I_low   = lower AQI value paired with that interval.
+- I_high  = upper AQI value paired with that interval.
+
+In plain English:
+1. Find the two concentration limits surrounding the PM2.5 value.
+2. Find the AQI limits paired with those concentration limits.
+3. Work out how far the concentration has moved through its interval.
+4. Apply the same fraction to the AQI interval.
+5. Round the final AQI to the nearest integer, following the EPA procedure.
+
+Illustrative example using the Good interval:
+- PM2.5 concentration C = 5.0 µg/m3.
+- C_low = 0.0 and C_high = 9.0.
+- I_low = 0 and I_high = 50.
+
+AQI = ((50 - 0) / (9.0 - 0.0)) * (5.0 - 0.0) + 0
+    = (50 / 9) * 5
+    = 27.78
+    ≈ 28
+
+This example demonstrates the interpolation arithmetic. It is not a live
+reading from a Pakistani city.
+
+The EPA procedure also specifies how concentration values are truncated
+before interpolation. For PM2.5, truncate to one decimal place, then
+calculate and round the resulting index. See reference [2], Appendix G.
+
+6. WHY DOES THE PROJECT USE THE US EPA BREAKPOINTS?
+---------------------------------------------------
+The project currently uses a PM2.5-to-AQI calculation based on the US EPA
+breakpoint method because it provides a published, reproducible method and
+a clear table for converting PM2.5 concentration to an AQI sub-index.
+
+This is a project methodology choice. It does NOT mean:
+- The US EPA operates the monitoring stations in Pakistan.
+- The result is an official Pakistan government AQI.
+- A PM2.5-only value is the complete multi-pollutant AQI.
+- The US EPA breakpoint system is the only AQI system in the world.
+
+Always label project results as "PM2.5-based US EPA AQI estimate" unless
+the project later implements and validates the complete applicable AQI
+methodology and official source data.
+
+7. WHY DOES THE PROJECT NEED A 24-HOUR AVERAGE?
+-----------------------------------------------
+The PM2.5 breakpoint table used here is defined for a 24-hour average.
+An individual hourly value is not automatically a 24-hour average.
+
+The machine-learning preparation scripts group hourly records by city
+and calendar day. They currently require at least 18 valid hourly PM2.5
+observations for a city-day before calculating a daily mean.
+
+That 18-hour rule is a project data-completeness rule. It allows a day with
+some missing hourly observations to be retained, but it does not make the
+partial-day mean identical to a complete 24-hour measurement. Such values
+should be described as estimates based on available hourly coverage.
+
+For rigorous reporting, document the valid-hour count and consider whether
+the chosen completeness rule is appropriate for the dataset and intended
+analysis.
+
+8. WHAT DOES EACH IMPORTANT DATA COLUMN MEAN?
+---------------------------------------------
+The scripts expect these required fields:
+
+- city:
+  Name of the city associated with the observation.
+
+- timestamp:
+  Date and time of the observation. It is used to group hourly records into
+  calendar days and years.
+
+- pm2_5:
+  PM2.5 concentration, expected in µg/m3. It is used to calculate the
+  PM2.5-based AQI target.
+
+Other pollutant and weather fields may be present:
+- pm10: particulate matter up to 10 µm, usually µg/m3.
+- carbon_monoxide: carbon monoxide concentration; check the source unit.
+- nitrogen_dioxide: nitrogen dioxide concentration; check the source unit.
+- sulphur_dioxide: sulphur dioxide concentration; check the source unit.
+- ozone: ozone concentration; check the source unit.
+- dust: modelled dust concentration or related variable; check metadata.
+- temperature: air temperature; check whether degrees Celsius are used.
+- humidity: relative humidity, normally percent.
+- precipitation: precipitation amount; check the source's time interval and unit.
+- wind_speed: wind speed; check whether km/h or m/s is used.
+- wind_direction: wind direction, normally degrees.
+- pressure: atmospheric pressure; check whether hPa or another unit is used.
+
+Never assume a unit from a column name alone. Confirm units in the original
+dataset documentation or API metadata before comparing or combining values.
+
+9. HOW THE PROJECT PROCESSES HOURLY DATA
+----------------------------------------
+The ML scripts use this general sequence:
+
+1. Read the CSV into a Pandas DataFrame.
+2. Keep the city, timestamp, and PM2.5 columns needed for the AQI target.
+3. Convert timestamps to datetime values.
+4. Convert PM2.5 values to numeric values.
+5. Remove invalid timestamps, missing city names, invalid concentrations,
+   and duplicate city/timestamp observations.
+6. Group records by city and calendar date.
+7. Count valid hourly PM2.5 observations for each city-day.
+8. Keep only days meeting the minimum valid-hour rule (18 by default).
+9. Calculate the mean PM2.5 concentration for each retained city-day.
+10. Convert each daily mean to a PM2.5-based AQI estimate.
+11. For annual trends, average the daily AQI estimates within each city-year.
+12. For the supervised regression experiment, aggregate available predictor
+    columns by city-day and train models using a chronological split.
+
+The annual model's yearly target is the mean of daily AQI estimates. It is
+NOT the AQI calculated from the annual mean PM2.5 concentration.
+
+10. WHAT ARE THE TWO ML SCRIPTS TRYING TO DO?
+--------------------------------------------
+A) aqi_regression.py
+   This is a supervised estimation experiment. It attempts to estimate the
+   daily PM2.5-based AQI from other available pollutant and weather features.
+   PM2.5 is excluded from the input features because PM2.5 is used to create
+   the AQI target. Including it would leak the answer into the inputs.
+
+   It compares Linear Regression, degree-2 Polynomial Regression, and
+   Random Forest Regression. It evaluates them on later dates that were not
+   used for training. It does not forecast future years.
+
+B) aqi_yearly_forecast.py
+   This script first creates annual city-level AQI summaries, then fits a
+   separate Linear Regression trend for each city. It extrapolates the
+   historical annual trend into future years.
+
+   A linear projection assumes the historical trend continues. It cannot
+   know future policy changes, weather anomalies, industrial activity,
+   traffic changes, or unexpected events. Longer projections are more
+   uncertain.
+
+11. IMPORTANT DATASET PROVENANCE NOTE
+-------------------------------------
+The repository contains:
+  Dataset/pakistan_air_quality_final_clean_v2.csv
+
+However, the CSV file and the repository documentation available during
+this documentation update did not provide a verifiable citation identifying
+the original publisher, download page, license, collection method, or
+whether every row is station-measured or modelled.
+
+Do not claim that the historical CSV came from Open-Meteo, IQAir, OpenAQ,
+or another provider unless the team can verify that from the original
+download record or dataset metadata.
+
+Before final submission, add the following information after checking the
+original source:
+- Dataset title and publisher.
+- Exact download URL or DOI.
+- Date downloaded or accessed.
+- License and attribution requirements.
+- Geographic coverage and city list.
+- Start and end dates.
+- Temporal resolution (hourly, daily, etc.).
+- Units for every pollutant and weather field.
+- Whether values are measured, modelled, reanalysis, or a mixture.
+- Any cleaning or transformation performed by the project team.
+
+Open-Meteo is documented as the provider for the project's live API
+integration. Its Air Quality API describes hourly variables and the CAMS
+forecast/reanalysis sources. That API documentation is a source for the
+live integration, not proof of the historical CSV's origin. See reference
+[5].
+
+12. REFERENCES
+--------------
+[1] US EPA / AirNow. "Air Quality Index (AQI) Basics."
+    https://www.airnow.gov/aqi/aqi-basics/
+    Explains the AQI purpose, scale, six categories, and major pollutants.
+
+[2] US Electronic Code of Federal Regulations. 40 CFR Part 58,
+    Appendix G: Uniform Air Quality Index (AQI) and Daily Reporting.
+    https://www.govinfo.gov/content/pkg/CFR-2024-title40-vol6/xhtml/CFR-2024-title40-vol6-part58.html
+    Contains AQI reporting requirements, pollutant breakpoints, and
+    calculation procedures.
+
+[3] World Health Organization. "Health consequences of air pollution."
+    https://www.who.int/news/item/25-06-2024-what-are-health-consequences-of-air-pollution-on-populations
+    Explains particulate matter and the health relevance of fine particles.
+
+[4] US Environmental Protection Agency. "Reconsideration of the National
+    Ambient Air Quality Standards for Particulate Matter", final rule,
+    Federal Register, 6 March 2024.
+    https://www.epa.gov/system/files/documents/2024-04/2024-pm-naaqs-fr-published.pdf
+    Contains the revised PM2.5 AQI breakpoint table and the 2024 rulemaking
+    context, including removal of the separate AQI 400 breakpoint.
+
+[5] Open-Meteo. "Air Quality API Documentation."
+    https://open-meteo.com/en/docs/air-quality-api
+    Documents the live API's hourly air-quality variables, units, time
+    parameters, and data-source information for CAMS products.
+
+[6] World Health Organization. "Air quality and health: Types of pollutants."
+    https://www.who.int/teams/environment-climate-change-and-health/air-quality-and-health/health-impacts/types-of-pollutants
+    Provides additional background on particulate matter composition and
+    PM2.5/PM10 particle-size categories.
+
+Reference access date: 25 November 2026.
+
+END OF DOCUMENT
